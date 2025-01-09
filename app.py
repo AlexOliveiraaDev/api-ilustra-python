@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-api_url = os.getenv("API_URL")
+api_url = os.getenv("DB_KEY_URL")
 client = AsyncMongoClient(api_url)
 
 db = client["ilustra-db"]
