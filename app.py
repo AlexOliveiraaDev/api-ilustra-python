@@ -28,14 +28,14 @@ app.add_middleware(
 
 api_url = os.getenv("DB_KEY_URL")
 client = AsyncMongoClient(api_url)
-
 db = client["ilustra-db"]
 
 
-class Item(BaseModel):
-    name:str
-    age:int
-    have_car : Union[bool,None] = None
+class Word(BaseModel):
+    word:str
+    images:list[str]
+    closeWords:list[str]
+    lastDate:dict
 
 
 @app.get("/getDayWord")
@@ -48,32 +48,35 @@ async def get_day_word():
     except Exception as e:
         return {"message": str(e)}
 
-@app.post("/addDayWord")
-async def add_day_word(word: dict):
+@app.post("/setDayWord/{word}")
+async def set_day_word(word: str):
+    
     try:
-        result = await db.dayWord.insert_one(word)
+        result = await db.words.find_one({"word": word})
+        print(result)
+        if not result:
+            raise HTTPException(status_code=404, detail="Word not found")
+        return {"message": "Word: " + word + " set as word of the day"}
+    except Exception as e:
+        return {"message": str(e)}
+
+
+@app.post("/addWord")
+async def add_day_word(word: Word):
+    try:
+        word = word.model_dump()
+        result = await db.words.insert_one(word)
         return {"message": "Word added successfully", "id": str(result.inserted_id)}
     except Exception as e:
         return {"message": str(e)}
 
-@app.delete("/deleteDayWord/{word_id}")
+@app.delete("/deleteWord/{word_id}")
 async def delete_day_word(word_id: str):
     try:
-        result = await db.dayWord.delete_one({"_id": word_id})
+        result = await db.words.delete_one({"_id": word_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Word not found")
         return {"message": "Word deleted successfully"}
-    except Exception as e:
-        return {"message": str(e)}
-
-@app.put("/updateDayWord/{word_id}")
-async def update_day_word(word_id: str, updated_data: dict):
-    
-    try:
-        result = await db.dayWord.update_one({"_id": word_id}, {"$set": updated_data})
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Word not found")
-        return {"message": "Word updated successfully"}
     except Exception as e:
         return {"message": str(e)}
 
