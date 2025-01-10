@@ -50,13 +50,14 @@ async def get_day_word():
 
 @app.post("/setDayWord/{word}")
 async def set_day_word(word: str):
-    
     try:
+        await db.dayWord.delete_many({})
         result = await db.words.find_one({"word": word})
-        print(result)
         if not result:
             raise HTTPException(status_code=404, detail="Word not found")
+        await db.dayWord.insert_one(result)
         return {"message": "Word: " + word + " set as word of the day"}
+
     except Exception as e:
         return {"message": str(e)}
 
@@ -64,16 +65,17 @@ async def set_day_word(word: str):
 @app.post("/addWord")
 async def add_day_word(word: Word):
     try:
+        
         word = word.model_dump()
         result = await db.words.insert_one(word)
         return {"message": "Word added successfully", "id": str(result.inserted_id)}
     except Exception as e:
         return {"message": str(e)}
 
-@app.delete("/deleteWord/{word_id}")
-async def delete_day_word(word_id: str):
+@app.delete("/deleteWord/{word}")
+async def delete_word(word: str):
     try:
-        result = await db.words.delete_one({"_id": word_id})
+        result = await db.words.delete_one({"word": word})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Word not found")
         return {"message": "Word deleted successfully"}
