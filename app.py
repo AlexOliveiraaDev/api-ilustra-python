@@ -8,6 +8,29 @@ from pydantic import BaseModel
 from pymongo import AsyncMongoClient
 from dotenv import load_dotenv
 
+from appwrite.client import Client
+from appwrite.services.storage import Storage
+from appwrite.id import ID
+from appwrite.input_file import InputFile
+
+
+client = Client()
+client.set_endpoint('https://cloud.appwrite.io/v1')
+client.set_project(os.getenv("APPWRITE_PROJECT"))
+client.set_key(os.getenv("DB_KEY_URL"))
+
+async def upload_images(image_urls: list[str]):
+    try:
+        storage = Storage(client)
+        for image_url in image_urls:
+            result = storage.create_file(
+                bucket_id=os.getenv("APPWRITE_BUCKET_ID"),
+                file_id=ID.unique(),
+                file=InputFile.from_path(image_url)
+            )
+            return result
+    except Exception as e:
+        return {"message": str(e)}
 
 load_dotenv()
 
@@ -65,8 +88,9 @@ async def set_day_word(word: str):
 @app.post("/addWord")
 async def add_day_word(word: Word):
     try:
-        
+        images = word.images
         word = word.model_dump()
+        await upload_images(images)
         result = await db.words.insert_one(word)
         return {"message": "Word added successfully", "id": str(result.inserted_id)}
     except Exception as e:
