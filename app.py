@@ -15,7 +15,8 @@ from appwrite.input_file import InputFile
 
 from mangum import Mangum
 
-
+def main(args):
+    print("Success!")
 storageClient = Client()
 storageClient.set_endpoint('https://cloud.appwrite.io/v1')
 storageClient.set_project(os.getenv("APPWRITE_PROJECT"))
