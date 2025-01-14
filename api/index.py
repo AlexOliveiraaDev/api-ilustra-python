@@ -29,6 +29,28 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'404 Not Found').encode('utf-8')
 
+    
+    def do_POST(self):
+        print("Here =>", self.path)
+        if self.path == '/api':
+            content_length = int(self.headers['Content-Length'])
+            field_data = self.rfile.read(content_length)
+
+            try:
+                data = json.loads(field_data)
+                print(data)
+            except Exception as e:
+                print(e)
+                self.send_response(400)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write(b'400 Bad Request').encode('utf-8')
+        else:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(b'404 Not Found').encode('utf-8')
+
 
 def main(args):
     print("Success!")
