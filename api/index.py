@@ -29,6 +29,7 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'404 Not Found').encode('utf-8')
 
+
 def main(args):
     print("Success!")
     
