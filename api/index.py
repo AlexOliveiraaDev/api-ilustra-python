@@ -12,24 +12,32 @@ from appwrite.client import Client
 from appwrite.services.storage import Storage
 from appwrite.id import ID
 from appwrite.input_file import InputFile
-from appwrite.exception import AppwriteException
 
-from mangum import Mangum
+from http.server import BaseHTTPRequestHandler
 
-appwriteClient = Client()
-storage = Storage(appwriteClient)
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        print("Here =>", self.path)
+        if self.path == '/api':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(b'Hello, world!').encode('utf-8')
+        else:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(b'404 Not Found').encode('utf-8')
 
-async def main(context):
-    appwriteClient.set_endpoint('https://cloud.appwrite.io/v1')
-    appwriteClient.set_project(os.getenv("APPWRITE_PROJECT"))
-    appwriteClient.set_key(os.getenv("APPWRITE_KEY"))
+def main(args):
+    print("Success!")
+    
+storageClient = Client()
+storageClient.set_endpoint('https://cloud.appwrite.io/v1')
+storageClient.set_project(os.getenv("APPWRITE_PROJECT"))
+storageClient.set_key(os.getenv("APPWRITE_KEY"))
 
-    try:
-        if context.req.path == "/addWord":
-            return await add_day_word(context.req.json)
-        
-    except AppwriteException as err:
-        return context.res.text(str(err)) 
+storage = Storage(storageClient)
 
 async def upload_images(image_urls: list[str]):
     try:
@@ -40,8 +48,8 @@ async def upload_images(image_urls: list[str]):
                 file=InputFile.from_path(image_url)
             )
             return result
-    except AppwriteException as err:
-        return {"message": str(err)}
+    except Exception as e:
+        return {"message": str(e)}
 
 load_dotenv()
 
