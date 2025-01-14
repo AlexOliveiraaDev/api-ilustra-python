@@ -132,5 +132,3 @@ async def test_storage():
 
 def serialize(mongoObject):
     return json.loads(json_util.dumps(mongoObject))
-
-handler = Mangum(app)
