@@ -12,17 +12,23 @@ from appwrite.client import Client
 from appwrite.services.storage import Storage
 from appwrite.id import ID
 from appwrite.input_file import InputFile
+from appwrite.exception import AppwriteException
 
 from mangum import Mangum
 
-def main(args):
-    print("Success!")
-storageClient = Client()
-storageClient.set_endpoint('https://cloud.appwrite.io/v1')
-storageClient.set_project(os.getenv("APPWRITE_PROJECT"))
-storageClient.set_key(os.getenv("APPWRITE_KEY"))
+def main(context):
+    appwriteClient = Client()
+    appwriteClient.set_endpoint('https://cloud.appwrite.io/v1')
+    appwriteClient.set_project(os.getenv("APPWRITE_PROJECT"))
+    appwriteClient.set_key(os.getenv("APPWRITE_KEY"))
 
-storage = Storage(storageClient)
+    try:
+        if context.req.path == "/testStorage":
+            return context.res.text("teste")
+    except AppwriteException as err:
+        return context.res.text(str(err)) 
+
+    storage = Storage(appwriteClient)
 
 async def upload_images(image_urls: list[str]):
     try:
@@ -33,8 +39,8 @@ async def upload_images(image_urls: list[str]):
                 file=InputFile.from_path(image_url)
             )
             return result
-    except Exception as e:
-        return {"message": str(e)}
+    except AppwriteException as err:
+        return {"message": str(err)}
 
 load_dotenv()
 
