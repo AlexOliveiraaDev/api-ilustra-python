@@ -16,19 +16,21 @@ from appwrite.exception import AppwriteException
 
 from mangum import Mangum
 
+appwriteClient = Client()
+storage = Storage(appwriteClient)
+
 def main(context):
-    appwriteClient = Client()
     appwriteClient.set_endpoint('https://cloud.appwrite.io/v1')
     appwriteClient.set_project(os.getenv("APPWRITE_PROJECT"))
     appwriteClient.set_key(os.getenv("APPWRITE_KEY"))
 
     try:
-        if context.req.path == "/testStorage":
+        if context.req.path == "/addWord":
+            add_day_word(context.req.json)
             return context.res.text("teste")
+        
     except AppwriteException as err:
         return context.res.text(str(err)) 
-
-    storage = Storage(appwriteClient)
 
 async def upload_images(image_urls: list[str]):
     try:
