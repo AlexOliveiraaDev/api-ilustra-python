@@ -13,17 +13,20 @@ from appwrite.services.storage import Storage
 from appwrite.id import ID
 from appwrite.input_file import InputFile
 
+from mangum import Mangum
 
-client = Client()
-client.set_endpoint('https://cloud.appwrite.io/v1')
-client.set_project(os.getenv("APPWRITE_PROJECT"))
-client.set_key(os.getenv("DB_KEY_URL"))
+
+storageClient = Client()
+storageClient.set_endpoint('https://cloud.appwrite.io/v1')
+storageClient.set_project(os.getenv("APPWRITE_PROJECT"))
+storageClient.set_key(os.getenv("APPWRITE_KEY"))
+
+storage = Storage(storageClient)
 
 async def upload_images(image_urls: list[str]):
     try:
-        storage = Storage(client)
         for image_url in image_urls:
-            result = storage.create_file(
+            result = await storage.create_file(
                 bucket_id=os.getenv("APPWRITE_BUCKET_ID"),
                 file_id=ID.unique(),
                 file=InputFile.from_path(image_url)
@@ -89,6 +92,7 @@ async def set_day_word(word: str):
 async def add_day_word(word: Word):
     try:
         images = word.images
+        print(images)
         word = word.model_dump()
         await upload_images(images)
         result = await db.words.insert_one(word)
@@ -105,6 +109,12 @@ async def delete_word(word: str):
         return {"message": "Word deleted successfully"}
     except Exception as e:
         return {"message": str(e)}
+    
+@app.get("/testStorage")
+async def test_storage():
+    return storage.get_bucket(os.getenv("APPWRITE_BUCKET_ID"))
 
 def serialize(mongoObject):
     return json.loads(json_util.dumps(mongoObject))
+
+handler = Mangum(app)
