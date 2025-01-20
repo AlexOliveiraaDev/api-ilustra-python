@@ -95,7 +95,10 @@ async def add_day_word(word: Word):
         images = word.images
         print(images)
         word = word.model_dump()
-        upload_images = await upload_images(images)
+        try:
+            upload_images = await upload_images(images)
+        except Exception as e:
+            return {"message": str(e)}
         result = await db.words.insert_one(word)
         return {"message": "Word added successfully", "id": str(result.inserted_id), "uploaded_images": upload_images}
     except Exception as e:
