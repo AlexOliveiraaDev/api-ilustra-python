@@ -92,17 +92,35 @@ async def set_day_word(word: str):
 @app.post("/addWord")
 async def add_day_word(word: Word):
     try:
-        images = word.images
-        print(images)
-        word = word.model_dump()
+        # Extrai as imagens do objeto `Word`
+        images = word.images if hasattr(word, 'images') else []
+        if not isinstance(images, list):
+            return {"message": "Invalid images format. Must be a list."}
+
+        # Converte o objeto `Word` para um dicionário usando `model_dump`
+        word_dict = word.model_dump()
+
+        # Faz o upload das imagens
         try:
-            upload_images = await upload_images(images)
+            uploaded_images = await upload_images(images)
         except Exception as e:
-            return {"message": str(e)}
-        result = await db.words.insert_one(word)
-        return {"message": "Word added successfully", "id": str(result.inserted_id), "uploaded_images": upload_images}
+            return {"message": f"Error uploading images: {str(e)}"}
+
+        # Insere o documento no banco de dados
+        try:
+            result = await db.words.insert_one(word_dict)
+        except Exception as e:
+            return {"message": f"Error inserting word into database: {str(e)}"}
+
+        # Retorna o resultado com o ID do documento inserido
+        return {
+            "message": "Word added successfully",
+            "id": str(result.inserted_id),
+            "uploaded_images": uploaded_images,
+        }
     except Exception as e:
-        return {"message": str(e)}
+        # Captura erros gerais na função
+        return {"message": f"Unexpected error: {str(e)}"}
 
 @app.delete("/deleteWord/{word}")
 async def delete_word(word: str):
