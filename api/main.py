@@ -13,49 +13,7 @@ from appwrite.services.storage import Storage
 from appwrite.id import ID
 from appwrite.input_file import InputFile
 
-from http.server import BaseHTTPRequestHandler
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        print("Here =>", self.path)
-        if self.path == '/api':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(b'Hello, world!').encode('utf-8')
-        else:
-            self.send_response(404)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(b'404 Not Found').encode('utf-8')
-
-    
-    def do_POST(self):
-        print("Here =>", self.path)
-        if self.path == '/api':
-            content_length = int(self.headers['Content-Length'])
-            field_data = self.rfile.read(content_length)
-
-            try:
-                data = json.loads(field_data)
-                print(data)
-                self.send_response(200, data)
-            except Exception as e:
-                print(e)
-                self.send_response(400)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write(b'400 Bad Request').encode('utf-8')
-        else:
-            self.send_response(404)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(b'404 Not Found').encode('utf-8')
-
-
-def main(args):
-    print("Success!")
-    
 storageClient = Client()
 storageClient.set_endpoint('https://cloud.appwrite.io/v1')
 storageClient.set_project(os.getenv("APPWRITE_PROJECT"))
@@ -103,6 +61,9 @@ class Word(BaseModel):
     closeWords:list[str]
     lastDate:dict
 
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 @app.get("/getDayWord")
 async def get_day_word():
