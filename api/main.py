@@ -63,7 +63,7 @@ class Word(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Yes, the api is working!"}
 
 @app.get("/getDayWord")
 async def get_day_word():
@@ -95,9 +95,9 @@ async def add_day_word(word: Word):
         images = word.images
         print(images)
         word = word.model_dump()
-        await upload_images(images)
+        upload_images = await upload_images(images)
         result = await db.words.insert_one(word)
-        return {"message": "Word added successfully", "id": str(result.inserted_id)}
+        return {"message": "Word added successfully", "id": str(result.inserted_id), "uploaded_images": upload_images}
     except Exception as e:
         return {"message": str(e)}
 
