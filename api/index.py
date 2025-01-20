@@ -39,6 +39,7 @@ class handler(BaseHTTPRequestHandler):
             try:
                 data = json.loads(field_data)
                 print(data)
+                self.send_response(200, data)
             except Exception as e:
                 print(e)
                 self.send_response(400)

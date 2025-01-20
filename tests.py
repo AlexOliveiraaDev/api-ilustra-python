@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from app import app
+from index import app
 
 client = TestClient(app)
 def test_get_day_word():
