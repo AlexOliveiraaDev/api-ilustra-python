@@ -21,15 +21,26 @@ storageClient.set_key(os.getenv("APPWRITE_KEY"))
 
 storage = Storage(storageClient)
 
-async def upload_images(image_urls: list[str]):
+async def upload_images(images):
     try:
-        for image_url in image_urls:
+        save_images(images)
+        for image in images:
+            temp_path = f"temp/{image}"
             result = await storage.create_file(
                 bucket_id=os.getenv("APPWRITE_BUCKET_ID"),
                 file_id=ID.unique(),
-                file=InputFile.from_path(image_url)
+                file=InputFile.from_path(temp_path)
             )
             return result
+    except Exception as e:
+        return {"message": str(e)}
+    
+async def save_images(images):
+    try:
+        for image in images:
+            temp_path = f"temp/{image}"
+            with open(temp_path, "wb") as f:
+                f.write(image)
     except Exception as e:
         return {"message": str(e)}
 
